@@ -1,0 +1,10 @@
+{
+  "name": "Доска заявок",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "forwardPorts": [8000, 8001],
+  "portsAttributes": {
+    "8000": { "label": "Личная доска", "onAutoForward": "silent" },
+    "8001": { "label": "Форма для участников", "onAutoForward": "silent" }
+  },
+  "postStartCommand": "bash .devcontainer/start.sh"
+}

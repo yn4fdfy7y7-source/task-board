@@ -6,7 +6,9 @@ const fullDate = new Intl.DateTimeFormat('ru',{day:'numeric',month:'long',year:'
 const shortDate = new Intl.DateTimeFormat('ru',{day:'numeric',month:'short'});
 el('today').textContent = fullDate.format(new Date());
 
-const rows = [];
+const {mode, invite} = window.boardConfig;
+const inbox = mode === 'inbox';
+let rows = [];
 let loaded = false, draftId = '', noticeTimer;
 const stageOf = row => row.stage || row.status;
 function node(tag, className, text) {
@@ -113,7 +115,7 @@ function render() {
       const pile=node('div','pile');
       const group=byCell.get(lane+':'+stage) || [];
       for (const row of group) pile.append(taskNote(row));
-      if (!group.length && loaded && !query && stage==='new') {
+      if (!inbox && !group.length && loaded && !query && stage==='new') {
         pile.append(addControl(lane,stage,stage==='new' && !laneHasTasks.has(lane)));
       }
       cell.append(pile);
@@ -124,11 +126,24 @@ function render() {
   board.replaceChildren(head,body);
 }
 el('newTask').addEventListener('click',()=>startDraft());
+el('share').addEventListener('click', async () => {
+  const url = new URL(invite || location.pathname, location.origin);
+  url.hash = 'new';
+  try {
+    await navigator.clipboard.writeText(url.href);
+    toast('Ссылка на форму скопирована');
+  } catch {
+    el('inviteUrl').value = url.href;
+    el('inviteDialog').showModal();
+    el('inviteUrl').select();
+  }
+});
+if (!inbox && location.hash === '#new') startDraft();
 document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>button.closest('dialog').close()));
 el('search').addEventListener('input',render);
 
 el('newCategory').addEventListener('change',()=>el('newDialog').dataset.lane=el('newCategory').value);
-el('createForm').addEventListener('submit',event=>{
+el('createForm').addEventListener('submit',async event=>{
   event.preventDefault();
   const form=event.currentTarget;
   const data=Object.fromEntries(new FormData(form));
@@ -136,13 +151,72 @@ el('createForm').addEventListener('submit',event=>{
     message('createError','Заполните все поля заявки.');
     return;
   }
-  rows.unshift({...data,id:draftId,created:Date.now(),status:'new',stage:null});
+  const button = form.querySelector('[type=submit]');
+  if (button.disabled) return;
+  button.disabled = true;
+  message('createError');
+  try {
+    const row = mode === 'demo'
+      ? {...data, id:draftId, created:Date.now(), status:'new'}
+      : await api({method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({...data, id:draftId})});
+    rows = [row, ...rows.filter(item => item.id !== row.id)];
+  } catch (error) {
+    message('createError', error.message);
+    return;
+  } finally {
+    button.disabled = false;
+  }
   el('search').value='';
   draftId='';
   form.reset();
   el('newDialog').close();
   render();
-  toast('Тестовая заявка добавлена в эту вкладку');
+  toast(mode === 'demo' ? 'Тестовая заявка добавлена в эту вкладку' : 'Заявка отправлена на доску');
 });
-loaded=true;
+async function api(options = {}) {
+  let response;
+  try {
+    response = await fetch('./api/tasks', {cache:'no-store', ...options});
+  } catch {
+    throw new Error('Сервер недоступен. Попробуйте ещё раз.');
+  }
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data) throw new Error(data?.error || 'Сервер недоступен. Попробуйте ещё раз.');
+  return data;
+}
+let refreshing = false;
+async function refreshInbox() {
+  if (refreshing || document.hidden) return;
+  refreshing = true;
+  try {
+    const data = await api();
+    if (!Array.isArray(data)) throw new Error();
+    el('loadError').hidden = true;
+    if (!loaded || JSON.stringify(rows) !== JSON.stringify(data)) {
+      rows = data;
+      loaded = true;
+      render();
+    }
+  } catch {
+    el('loadError').hidden = false;
+  } finally {
+    refreshing = false;
+  }
+}
+if (mode !== 'demo') {
+  document.title = inbox ? 'Входящие заявки · Бюро задач' : 'Подать заявку · Бюро задач';
+  el('boardNotice').textContent = inbox
+    ? 'Здесь появляются заявки из общей формы. Доска обновляется автоматически.'
+    : 'Отправьте заявку. Техническое задание и почту увидит владелец доски.';
+}
+if (inbox) {
+  document.querySelector('h1').textContent = 'Входящие заявки';
+  el('newTask').hidden = true;
+  el('retry').addEventListener('click', refreshInbox);
+  document.addEventListener('visibilitychange', refreshInbox);
+  setInterval(refreshInbox, 5000);
+  void refreshInbox();
+} else {
+  loaded = true;
+}
 render();

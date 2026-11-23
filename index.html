@@ -9,10 +9,10 @@
 <body>
 <header class="mast"><div class="wrap top">
   <div class="brand"><span class="brand-icon" aria-hidden="true"></span>Бюро задач</div>
-  <time id="today" class="date"></time>
+  <div class="invite-tools"><time id="today" class="date"></time><button id="share" class="secondary" type="button">Ссылка на форму</button></div>
 </div></header>
 <main class="wrap">
-  <p class="demo-notice"><strong>Демонстрация.</strong> Тестовая заявка видна в этой вкладке до обновления страницы. Для проверки используйте вымышленную почту.</p>
+  <p class="demo-notice" id="boardNotice"><strong>Демонстрация.</strong> Тестовая заявка видна в этой вкладке до обновления страницы. Для проверки используйте вымышленную почту.</p>
   <div class="toolbar">
     <div class="board-title"><h1>Мои заявки</h1><span id="total" class="total" aria-label="Число заявок">…</span></div>
     <div class="tools"><label class="searchbox"><span aria-hidden="true"></span><input id="search" type="search" aria-label="Поиск по заявкам" placeholder="Найти заявку"></label>
@@ -47,5 +47,9 @@
   <div class="actions"><button class="secondary" type="button" data-close>Закрыть</button><button id="saveStatus" type="submit" class="primary">Сохранить</button></div></form>
 </dialog>
 <div id="notice" class="toast" role="status"></div>
+<dialog id="inviteDialog" aria-labelledby="inviteTitle"><header class="dialoghead"><h2 id="inviteTitle">Ссылка на форму</h2><button class="close" type="button" data-close aria-label="Закрыть">×</button></header>
+  <label>Скопируйте ссылку и отправьте её участнику<input id="inviteUrl" readonly></label>
+</dialog>
+<script src="./board-config.js"></script>
 <script src="./board.js"></script>
 </body></html>
