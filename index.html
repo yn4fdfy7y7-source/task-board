@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Доска заявок · Демо второй версии</title>
+  <meta name="description" content="Прикрепите задачу к доске, оставьте техническое задание и почту для связи.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="mast"><div class="wrap top">
+  <div class="brand"><span class="brand-icon" aria-hidden="true"></span>Бюро задач</div>
+  <time id="today" class="date"></time>
+</div></header>
+<main class="wrap">
+  <p class="demo-notice"><strong>Демонстрация.</strong> Тестовая заявка видна в этой вкладке до обновления страницы. Для проверки используйте вымышленную почту.</p>
+  <div class="toolbar">
+    <div class="board-title"><h1>Мои заявки</h1><span id="total" class="total" aria-label="Число заявок">…</span></div>
+    <div class="tools"><label class="searchbox"><span aria-hidden="true"></span><input id="search" type="search" aria-label="Поиск по заявкам" placeholder="Найти заявку"></label>
+    <button type="button" class="primary new-button" id="newTask"><b aria-hidden="true">＋</b> Новая заявка</button></div>
+  </div>
+  <div id="loadError" class="errorbox" role="alert" hidden>Не удалось загрузить заявки. <button id="retry" class="textbtn">Повторить</button></div>
+  <p id="searchSummary" class="search-summary" role="status" hidden></p>
+  <section class="frame" aria-label="Доска заявок по направлениям и статусам">
+    <i class="screw tl" aria-hidden="true"></i><i class="screw tr" aria-hidden="true"></i><i class="screw bl" aria-hidden="true"></i><i class="screw br" aria-hidden="true"></i>
+    <div class="scroller" tabindex="0" role="region" aria-label="Доска с пятью колонками. На узком экране прокручивайте по горизонтали.">
+      <table id="board" class="board" aria-label="Заявки по направлениям и статусам"></table>
+    </div>
+  </section>
+  <p class="help">Нажмите на стикер, чтобы открыть техническое задание.</p>
+</main>
+<dialog id="newDialog" aria-labelledby="formTitle"><form id="createForm">
+  <header class="dialoghead"><h2 id="formTitle">Новая заявка</h2><button type="button" class="close" data-close aria-label="Закрыть">×</button></header>
+  <label>Название задачи<input name="title" required maxlength="140" placeholder="Что нужно сделать?"></label>
+  <div class="pair"><label>Направление<select id="newCategory" name="category"></select></label><label hidden>Колонка<select id="newStatus" name="status" disabled></select></label></div>
+  <label>Техническое задание<textarea name="brief" required maxlength="5000" rows="3" placeholder="Опишите задачу, требования и важные детали"></textarea></label>
+  <label>Ожидаемый результат<textarea name="outcome" required maxlength="3000" rows="2" placeholder="Что должно получиться?"></textarea></label>
+  <label>Почта для связи<input name="email" type="email" required maxlength="254" autocomplete="email" placeholder="name@example.com"></label>
+  <p class="formError" role="alert" id="createError" hidden></p>
+  <div class="actions"><button type="button" class="secondary" data-close>Отмена</button><button class="primary" type="submit">Прикрепить стикер</button></div>
+</form></dialog>
+<dialog id="detailDialog" aria-labelledby="detailTitle">
+  <header class="dialoghead"><div class="eyebrow">Заявка</div><button class="close" type="button" data-close aria-label="Закрыть">×</button></header>
+  <h2 id="detailTitle"></h2><p id="detailDate" class="timestamp"></p>
+  <dl><dt>Техническое задание</dt><dd id="detailBrief"></dd><dt>Ожидаемый результат</dt><dd id="detailOutcome"></dd><dt>Почта для связи</dt><dd><a id="detailEmail"></a></dd></dl>
+  <form id="statusForm" hidden><div class="pair"><label>Направление<select id="category"></select></label><label>Колонка<select id="status"></select></label></div>
+  <p class="formError" role="alert" id="statusError" hidden></p>
+  <div class="actions"><button class="secondary" type="button" data-close>Закрыть</button><button id="saveStatus" type="submit" class="primary">Сохранить</button></div></form>
+</dialog>
+<div id="notice" class="toast" role="status"></div>
+<script src="./board.js"></script>
+</body></html>
