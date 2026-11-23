@@ -6,7 +6,12 @@ const fullDate = new Intl.DateTimeFormat('ru',{day:'numeric',month:'long',year:'
 const shortDate = new Intl.DateTimeFormat('ru',{day:'numeric',month:'short'});
 el('today').textContent = fullDate.format(new Date());
 
-const rows = [];
+const config = window.boardConfig;
+const live = Boolean(config?.url && config?.publishableKey);
+const db = live ? window.supabase.createClient(config.url, config.publishableKey, {
+  auth: {storage: sessionStorage, detectSessionInUrl: false}
+}) : null;
+let rows = [], staff = null, opened = null;
 let loaded = false, draftId = '', noticeTimer;
 const stageOf = row => row.stage || row.status;
 function node(tag, className, text) {
@@ -39,9 +44,15 @@ function startDraft(category, status) {
   el('newDialog').showModal();
 }
 function showDetail(row) {
+  opened=row;
+  const canEdit = staff && (staff.role==='admin' || !row.assignee || row.assignee===staff.id);
+  el('statusForm').hidden=!canEdit;
+  for (const option of el('status').options) {
+    option.disabled = Boolean(canEdit && staff.role==='executor' && !row.assignee && option.value!=='active');
+  }
   for (const [id,key] of [['detailTitle','title'],['detailBrief','brief'],['detailOutcome','outcome'],['detailEmail','email']]) el(id).textContent=row[key];
   el('detailEmail').href='mailto:'+encodeURIComponent(row.email).replace('%40','@');
-  el('detailDate').textContent='Входящие · '+categories.get(row.category)+' · '+fullDate.format(row.created);
+  el('detailDate').textContent=statuses.get(stageOf(row))+' · '+categories.get(row.category)+' · '+fullDate.format(row.created);
   el('status').value=stageOf(row);
   el('category').value=row.category;
   el('detailDialog').dataset.lane=row.category;
@@ -128,7 +139,7 @@ document.querySelectorAll('[data-close]').forEach(button=>button.addEventListene
 el('search').addEventListener('input',render);
 
 el('newCategory').addEventListener('change',()=>el('newDialog').dataset.lane=el('newCategory').value);
-el('createForm').addEventListener('submit',event=>{
+el('createForm').addEventListener('submit',async event=>{
   event.preventDefault();
   const form=event.currentTarget;
   const data=Object.fromEntries(new FormData(form));
@@ -136,13 +147,32 @@ el('createForm').addEventListener('submit',event=>{
     message('createError','Заполните все поля заявки.');
     return;
   }
-  rows.unshift({...data,id:draftId,created:Date.now(),status:'new',stage:null});
+  const submit=form.querySelector('[type=submit]');
+  if(submit.disabled) return;
+  submit.disabled=true;
+  message('createError');
+  try {
+    if (live) {
+      const {error}=await db.rpc('board_submit',{
+        request_id:draftId,task_title:data.title,task_brief:data.brief,
+        task_outcome:data.outcome,contact:data.email,lane:data.category
+      });
+      if (error) throw error;
+    }
+    if (!staff) rows.unshift({...data,id:draftId,created:Date.now(),status:'new'});
+    else void refreshBoard();
+  } catch {
+    message('createError','Не удалось подтвердить отправку. Попробуйте ещё раз.');
+    return;
+  } finally {
+    submit.disabled=false;
+  }
   el('search').value='';
   draftId='';
   form.reset();
   el('newDialog').close();
   render();
-  toast('Тестовая заявка добавлена в эту вкладку');
+  toast(live ? 'Заявка отправлена команде' : 'Тестовая заявка добавлена в эту вкладку');
 });
 loaded=true;
 render();

@@ -9,12 +9,12 @@
 <body>
 <header class="mast"><div class="wrap top">
   <div class="brand"><span class="brand-icon" aria-hidden="true"></span>Бюро задач</div>
-  <time id="today" class="date"></time>
+  <div class="staff-tools"><time id="today" class="date"></time><button type="button" class="secondary" id="team" hidden>Исполнители</button><button type="button" class="secondary" id="staffLogin" hidden>Вход для команды</button></div>
 </div></header>
 <main class="wrap">
-  <p class="demo-notice"><strong>Демонстрация.</strong> Тестовая заявка видна в этой вкладке до обновления страницы. Для проверки используйте вымышленную почту.</p>
+  <p class="demo-notice" id="boardNotice"><strong>Демонстрация.</strong> Тестовая заявка видна в этой вкладке до обновления страницы. Для проверки используйте вымышленную почту.</p>
   <div class="toolbar">
-    <div class="board-title"><h1>Мои заявки</h1><span id="total" class="total" aria-label="Число заявок">…</span></div>
+    <div class="board-title"><h1 id="boardTitle">Мои заявки</h1><span id="total" class="total" aria-label="Число заявок">…</span></div>
     <div class="tools"><label class="searchbox"><span aria-hidden="true"></span><input id="search" type="search" aria-label="Поиск по заявкам" placeholder="Найти заявку"></label>
     <button type="button" class="primary new-button" id="newTask"><b aria-hidden="true">＋</b> Новая заявка</button></div>
   </div>
@@ -42,10 +42,27 @@
   <header class="dialoghead"><div class="eyebrow">Заявка</div><button class="close" type="button" data-close aria-label="Закрыть">×</button></header>
   <h2 id="detailTitle"></h2><p id="detailDate" class="timestamp"></p>
   <dl><dt>Техническое задание</dt><dd id="detailBrief"></dd><dt>Ожидаемый результат</dt><dd id="detailOutcome"></dd><dt>Почта для связи</dt><dd><a id="detailEmail"></a></dd></dl>
-  <form id="statusForm" hidden><div class="pair"><label>Направление<select id="category"></select></label><label>Колонка<select id="status"></select></label></div>
+  <form id="statusForm" hidden><div class="pair"><label hidden>Направление<select id="category"></select></label><label>Колонка<select id="status"></select></label></div>
   <p class="formError" role="alert" id="statusError" hidden></p>
   <div class="actions"><button class="secondary" type="button" data-close>Закрыть</button><button id="saveStatus" type="submit" class="primary">Сохранить</button></div></form>
 </dialog>
 <div id="notice" class="toast" role="status"></div>
+<dialog id="loginDialog" aria-labelledby="loginTitle"><form id="loginForm">
+  <header class="dialoghead"><h2 id="loginTitle">Вход для команды</h2><button type="button" class="close" data-close aria-label="Закрыть">×</button></header>
+  <label>Почта<input name="email" type="email" autocomplete="username" required></label>
+  <label>Пароль<input name="password" type="password" autocomplete="current-password" required></label>
+  <p id="loginError" class="formError" role="alert" hidden></p>
+  <div class="actions"><button type="submit" class="primary">Войти</button></div>
+</form></dialog>
+<dialog id="teamDialog" aria-labelledby="teamTitle"><form id="teamForm">
+  <header class="dialoghead"><h2 id="teamTitle">Доступ исполнителя</h2><button type="button" class="close" data-close aria-label="Закрыть">×</button></header>
+  <label>Почта участника<input name="email" type="email" required></label>
+  <label>Доступ<select name="access"><option value="grant">Дать доступ</option><option value="revoke">Закрыть доступ</option></select></label>
+  <p id="teamError" class="formError" role="alert" hidden></p>
+  <div class="actions"><button type="submit" class="primary">Сохранить</button></div>
+</form></dialog>
+<script src="./board-config.js"></script>
+<script src="./vendor/supabase-2.119.2.js"></script>
 <script src="./board.js"></script>
+<script src="./team.js"></script>
 </body></html>

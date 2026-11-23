@@ -19,3 +19,5 @@ dialog{--note:#f7e57c;max-width:calc(100% - 28px);width:510px;max-height:90dvh;b
 @media(prefers-reduced-motion:reduce){.note{transition:none}}
 
 [hidden]{display:none!important}.demo-notice{margin:15px 0 0;padding:9px 12px;background:#f4e6ae;color:#29281d;border-radius:3px}.note.task{cursor:pointer}
+.staff-tools{display:flex;align-items:center;gap:10px}
+@media(max-width:600px){.staff-tools:has(button:not([hidden])) .date{display:none}.staff-tools{gap:5px}.staff-tools button{font-size:.8rem;padding:5px 8px}}
