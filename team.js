@@ -90,13 +90,29 @@ function useSession(id) {
   if (id) void refreshBoard();
 }
 
+function openTeamInbox() {
+  if (location.hash !== '#team') return;
+  for (const id of ['newDialog', 'detailDialog', 'teamDialog']) el(id).close();
+  if (activeUser) {
+    el('loginDialog').close();
+    void refreshBoard();
+  } else if (!el('loginDialog').open) {
+    message('loginError');
+    el('loginDialog').showModal();
+  }
+}
+
 if (live) {
   document.title='Бюро задач · Доска заявок';
   renderAccess();
-  db.auth.onAuthStateChange((_event,session)=>{
+  db.auth.onAuthStateChange((event,session)=>{
     const id=session?.user.id || null;
-    setTimeout(()=>useSession(id),0);
+    setTimeout(()=>{
+      useSession(id);
+      if (event === 'INITIAL_SESSION') openTeamInbox();
+    },0);
   });
+  window.addEventListener('hashchange',openTeamInbox);
   el('staffLogin').addEventListener('click', async ()=>{
     if (!activeUser) {
       message('loginError');
