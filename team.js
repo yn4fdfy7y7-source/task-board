@@ -8,7 +8,9 @@ function renderAccess() {
   el('boardTitle').textContent = staff ? 'Доска команды' : 'Мои заявки';
   el('boardNotice').textContent = staff
     ? 'Новые заявки появляются здесь автоматически.'
-    : 'Оставьте заявку. Техническое задание и почту увидит команда.';
+    : formReady ? 'Оставьте заявку. Техническое задание и почту увидит команда.'
+      : 'Приём заявок пока закрыт. Идёт подключение базы.';
+  el('newTask').disabled = !formReady;
   el('staffLogin').hidden = false;
   el('staffLogin').textContent = activeUser ? 'Выйти' : 'Вход для команды';
   el('team').hidden = staff?.role !== 'admin';
@@ -151,4 +153,16 @@ if (live) {
   el('retry').addEventListener('click',refreshBoard);
   setInterval(refreshBoard,10000);
 }
-if (location.hash==='#new') startDraft();
+async function enableFormWhenReady() {
+  const {data}=await db.rpc('board_ready');
+  if (data!==true) {
+    setTimeout(enableFormWhenReady, 10000);
+    return;
+  }
+  formReady=true;
+  renderAccess();
+  render();
+  if (location.hash==='#new' && !document.querySelector('dialog[open]')) startDraft();
+}
+if (live) void enableFormWhenReady();
+else if (location.hash==='#new') startDraft();

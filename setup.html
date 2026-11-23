@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Подключение доски</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<main class="wrap" style="max-width:44rem;padding-block:3rem">
+  <h1>Подключение доски</h1>
+  <p id="status" role="status">Открываем настройку в Supabase…</p>
+  <p>В редакторе Supabase нажмите <strong>Run</strong>, чтобы создать таблицы заявок и настроить доступ команды.</p>
+  <p><a id="open" hidden>Открыть настройку в Supabase</a></p>
+  <details><summary>Если редактор открылся пустым</summary><p>Скопируйте <a href="./supabase/board.sql" target="_blank" rel="noopener">текст настройки</a>, вставьте его в <a href="https://supabase.com/dashboard/project/lrkbufuturjioencohze/sql/new" target="_blank" rel="noopener">редактор Supabase</a> и нажмите <strong>Run</strong>.</p></details>
+</main>
+<script>
+(async () => {
+  try {
+    const response = await fetch('./supabase/board.sql', {cache:'no-store'});
+    if (!response.ok) throw new Error();
+    const sql = await response.text();
+    if (!sql.startsWith('begin;') || !sql.trimEnd().endsWith('commit;')) throw new Error();
+    const editor = new URL('https://supabase.com/dashboard/project/lrkbufuturjioencohze/sql/new');
+    editor.searchParams.set('content', sql);
+    const link = document.getElementById('open');
+    link.href = editor.href;
+    link.hidden = false;
+    location.replace(link.href);
+  } catch {
+    document.getElementById('status').textContent='Откройте инструкцию ниже, чтобы продолжить.';
+    document.querySelector('details').open=true;
+  }
+})();
+</script>
+</body></html>

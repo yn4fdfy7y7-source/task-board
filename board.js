@@ -12,6 +12,7 @@ const db = live ? window.supabase.createClient(config.url, config.publishableKey
   auth: {storage: sessionStorage, detectSessionInUrl: false}
 }) : null;
 let rows = [], staff = null, opened = null;
+let formReady = !live;
 let loaded = false, draftId = '', noticeTimer;
 const stageOf = row => row.stage || row.status;
 function node(tag, className, text) {
@@ -33,6 +34,7 @@ function toast(text) {
   noticeTimer=setTimeout(()=>el('notice').textContent='',3600);
 }
 function startDraft(category, status) {
+  if (!formReady) return;
   if (!draftId) {
     el('createForm').reset();
     draftId=crypto.randomUUID();
@@ -124,7 +126,7 @@ function render() {
       const pile=node('div','pile');
       const group=byCell.get(lane+':'+stage) || [];
       for (const row of group) pile.append(taskNote(row));
-      if (!group.length && loaded && !query && stage==='new') {
+      if (formReady && !group.length && loaded && !query && stage==='new') {
         pile.append(addControl(lane,stage,stage==='new' && !laneHasTasks.has(lane)));
       }
       cell.append(pile);

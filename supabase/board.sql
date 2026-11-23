@@ -80,4 +80,8 @@ do $$ begin
     (select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename='board_tasks')
   then alter publication supabase_realtime add table public.board_tasks; end if;
 end $$;
+create or replace function public.board_ready()
+returns boolean language sql stable security invoker set search_path='' as $$ select true $$;
+revoke all on function public.board_ready() from public,anon,authenticated;
+grant execute on function public.board_ready() to anon,authenticated;
 commit;
